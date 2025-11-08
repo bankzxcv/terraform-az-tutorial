@@ -91,6 +91,22 @@ export default function HomePage(): React.ReactElement {
             href="/modules"
             color="indigo"
           />
+
+          <TutorialCard
+            number="07"
+            title="Express.js API"
+            description="Serverless Express.js REST API on Azure Functions with health monitoring"
+            href="/api"
+            color="teal"
+          />
+
+          <TutorialCard
+            number="08"
+            title="Deploy Next.js"
+            description="Deploy Next.js applications to Azure App Service with zero configuration"
+            href="/nextjs"
+            color="pink"
+          />
         </div>
       </div>
 
@@ -124,6 +140,8 @@ function TutorialCard({ number, title, description, href, color }: TutorialCardP
     orange: 'bg-orange-100 text-orange-600 border-orange-300',
     red: 'bg-red-100 text-red-600 border-red-300',
     indigo: 'bg-indigo-100 text-indigo-600 border-indigo-300',
+    teal: 'bg-teal-100 text-teal-600 border-teal-300',
+    pink: 'bg-pink-100 text-pink-600 border-pink-300',
   }[color];
 
   return (

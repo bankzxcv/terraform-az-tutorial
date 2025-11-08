@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Settings, Package, Cloud, Network, Box } from 'lucide-react';
+import { Home, Settings, Package, Cloud, Network, Box, Server, Layers } from 'lucide-react';
 
 interface NavItem {
   href: string;
@@ -18,6 +18,8 @@ const navItems: NavItem[] = [
   { href: '/functions', label: 'Azure Functions', icon: Cloud },
   { href: '/networking', label: 'Advanced Networking', icon: Network },
   { href: '/modules', label: 'Terraform Modules', icon: Box },
+  { href: '/api', label: 'Express.js API', icon: Server },
+  { href: '/nextjs', label: 'Deploy Next.js', icon: Layers },
 ];
 
 export function Navigation(): React.ReactElement {
