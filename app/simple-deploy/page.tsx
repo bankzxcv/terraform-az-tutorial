@@ -325,7 +325,13 @@ output "storage_account_name" {
         <p className="text-gray-700 mb-4">
           In the terraform directory, create <code className="bg-gray-100 px-2 py-1 rounded">terraform.tfvars</code> with your values:
         </p>
-        <CommandBlock command="cd terraform && cat > terraform.tfvars << 'EOF'\nlocation      = \"East US\"\nenvironment   = \"dev\"\nfunction_name = \"my-simple-api\"\nEOF" />
+        <CodeBlock
+          language="hcl"
+          filename="terraform/terraform.tfvars"
+          code={`location      = "East US"
+environment   = "dev"
+function_name = "my-simple-api"`}
+        />
       </Section>
 
       {/* Step 9: Initialize Terraform */}
