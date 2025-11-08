@@ -579,7 +579,7 @@ esac`}
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h4 className="font-semibold text-gray-900 mb-2">Echo Test (POST)</h4>
-              <CommandBlock command={`curl -X POST https://your-function.azurewebsites.net/api/echo -H "Content-Type: application/json" -d '{"message":"Hello from Azure!"}'`} />
+              <CommandBlock command='curl -X POST https://your-function.azurewebsites.net/api/echo -H "Content-Type: application/json" -d "{\"message\":\"Hello from Azure!\"}"' />
             </div>
           </div>
         </div>
