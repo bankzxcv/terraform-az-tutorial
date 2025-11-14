@@ -1,0 +1,28 @@
+# Additional service configurations
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo-app-lb
+  namespace: demo-app
+  labels:
+    app: demo-app
+  annotations:
+    # AWS annotations
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # Azure annotations
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+    # GCP annotations
+    cloud.google.com/load-balancer-type: "External"
+spec:
+  type: LoadBalancer
+  selector:
+    app: demo-app
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  externalTrafficPolicy: Local  # Preserve source IP
+  healthCheckNodePort: 30100

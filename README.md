@@ -65,37 +65,60 @@ Browse the comprehensive guides:
 ├── 📄 README.md (you are here)
 │   └── Project overview and quick start
 │
-├── 📘 LEARNING_PATH.md
-│   ├── Complete learning roadmap
-│   ├── Beginner track (8-10 hours)
-│   ├── Intermediate track (12-15 hours)
-│   ├── Advanced track (15-20 hours)
-│   └── Prerequisites and setup guide
+├── 📘 LEARNING_PATHS.md
+│   ├── DevSecOps Engineer Path
+│   ├── Cloud-Specific Paths (Azure/AWS/GCP)
+│   ├── Kubernetes Path
+│   ├── Security-Focused Path
+│   └── Complete curriculum with time estimates
+│
+├── 🚀 QUICK_START.md
+│   ├── Get up and running in 15 minutes
+│   ├── Simple deployment example
+│   └── First success experience
+│
+├── 🤝 CONTRIBUTING.md
+│   ├── How to contribute
+│   ├── Code style guidelines
+│   └── How to add new lessons
+│
+├── 📖 docs/
+│   │
+│   ├── 00-getting-started/
+│   │   ├── 01-prerequisites.md
+│   │   ├── 02-terraform-installation.md
+│   │   ├── 03-cloud-cli-setup.md
+│   │   ├── 04-first-terraform-project.md
+│   │   ├── 05-terraform-workflow.md
+│   │   └── 06-hcl-syntax.md
+│   │
+│   ├── 01-azure/
+│   │   └── Azure-specific lessons
+│   │
+│   ├── 02-aws/
+│   │   └── AWS-specific lessons (coming soon)
+│   │
+│   ├── 03-gcp/
+│   │   └── GCP-specific lessons (coming soon)
+│   │
+│   └── 09-advanced/
+│       ├── 01-state-management.md
+│       ├── 02-workspaces.md
+│       ├── 03-import-existing.md
+│       ├── 04-terraform-testing.md
+│       ├── 05-disaster-recovery.md
+│       ├── 06-performance-optimization.md
+│       └── 07-enterprise-patterns.md
+│
+├── 📚 reference/
+│   ├── Terraform guidelines and reference docs
+│   └── Quick reference materials
 │
 ├── 🏗️ PRODUCTION_BEST_PRACTICES.md
-│   ├── Architecture design patterns
-│   ├── Security best practices
-│   ├── Cost optimization strategies
-│   ├── High availability patterns
-│   ├── Monitoring & observability
-│   ├── Multi-environment setup
-│   ├── CI/CD integration
-│   └── Compliance & governance
+│   └── Enterprise-grade infrastructure patterns
 │
-├── 🚀 DEPLOYMENT_GUIDE.md
-│   ├── Quick deployment recipes
-│   ├── Scenario 1: Simple storage
-│   ├── Scenario 2: Static website
-│   ├── Scenario 3: Azure Functions
-│   ├── Scenario 4: Next.js app
-│   ├── Scenario 5: REST API
-│   └── Troubleshooting guide
-│
-└── 📂 terraform_guideline/
-    ├── START_HERE.md
-    ├── TERRAFORM_WORKFLOW_GUIDE.md
-    ├── QUICK_REFERENCE.md
-    └── README_VISUAL_GUIDE.md
+└── 🚀 DEPLOYMENT_GUIDE.md
+    └── Quick deployment recipes
 ```
 
 ---
@@ -145,6 +168,33 @@ Week 3-4: Enterprise Patterns
 ```
 
 📖 **Full Details:** [LEARNING_PATH.md](./LEARNING_PATH.md)
+
+---
+
+## 🎓 New: Comprehensive Learning Paths
+
+We've added extensive documentation to help you master Terraform and DevSecOps:
+
+### Getting Started (Complete Beginner Path)
+Perfect for absolute beginners - start here!
+
+1. **[Prerequisites](docs/00-getting-started/01-prerequisites.md)** - Tools, accounts, and knowledge you need
+2. **[Terraform Installation](docs/00-getting-started/02-terraform-installation.md)** - Installing and configuring Terraform
+3. **[Cloud CLI Setup](docs/00-getting-started/03-cloud-cli-setup.md)** - Azure CLI, AWS CLI, gcloud setup
+4. **[First Terraform Project](docs/00-getting-started/04-first-terraform-project.md)** - Hello World deployment
+5. **[Terraform Workflow](docs/00-getting-started/05-terraform-workflow.md)** - Master init, plan, apply, destroy
+6. **[HCL Syntax](docs/00-getting-started/06-hcl-syntax.md)** - HashiCorp Configuration Language fundamentals
+
+### Advanced Topics (Production-Ready Skills)
+For those ready to deploy enterprise infrastructure:
+
+1. **[State Management](docs/09-advanced/01-state-management.md)** - Remote state, locking, backends
+2. **[Workspaces](docs/09-advanced/02-workspaces.md)** - Multi-environment deployments
+3. **[Import Existing Resources](docs/09-advanced/03-import-existing.md)** - Bring existing infrastructure under Terraform
+4. **[Terraform Testing](docs/09-advanced/04-terraform-testing.md)** - Terratest, Kitchen-Terraform
+5. **[Disaster Recovery](docs/09-advanced/05-disaster-recovery.md)** - Backup and recovery strategies
+6. **[Performance Optimization](docs/09-advanced/06-performance-optimization.md)** - Large-scale deployments
+7. **[Enterprise Patterns](docs/09-advanced/07-enterprise-patterns.md)** - Team collaboration, governance
 
 ---
 

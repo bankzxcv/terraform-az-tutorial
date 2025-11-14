@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json.schemastore.org/function.json",
+  "bindings": [
+    {
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ],
+      "authLevel": "function",
+      "route": "hello"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    }
+  ],
+  "scriptFile": "index.js"
+}
+
+/*
+ * FUNCTION.JSON EXPLANATION
+ * =========================
+ *
+ * This configuration file defines how Azure Functions should invoke your function.
+ * It specifies triggers, bindings, and other metadata.
+ *
+ * STRUCTURE:
+ * ----------
+ *
+ * 1. bindings (array):
+ *    - Defines inputs and outputs for the function
+ *    - Each binding has a type, direction, and name
+ *    - Bindings reduce boilerplate code for common operations
+ *
+ *
+ * HTTP TRIGGER BINDING (Input):
+ * -----------------------------
+ *
+ * type: "httpTrigger"
+ *   - This function is triggered by HTTP requests
+ *   - Other trigger types: timer, queue, blob, eventGrid, cosmosDB, etc.
+ *
+ * direction: "in"
+ *   - This is an input binding (triggers the function)
+ *   - "out" is for output bindings
+ *
+ * name: "req"
+ *   - The parameter name passed to your function
+ *   - In index.js, you access this as the 'req' parameter
+ *
+ * methods: ["get", "post"]
+ *   - HTTP methods that trigger this function
+ *   - Can include: "get", "post", "put", "delete", "patch", "options"
+ *   - Omit to allow all methods
+ *
+ * authLevel: "function"
+ *   - SECURITY: Determines authentication requirements
+ *   - Options:
+ *     - "anonymous": No authentication required (public access)
+ *     - "function": Requires function-level key (recommended for APIs)
+ *     - "admin": Requires master key (most restrictive)
+ *   - Function keys are managed in Azure Portal
+ *   - Keys are passed via query string (?code=xxx) or x-functions-key header
+ *
+ * route: "hello"
+ *   - Custom URL route for this function
+ *   - Full URL: https://<app-name>.azurewebsites.net/api/hello
+ *   - Without route property: https://<app-name>.azurewebsites.net/api/<function-name>
+ *   - Supports route parameters: "users/{id}" → access via req.params.id
+ *
+ *
+ * HTTP OUTPUT BINDING:
+ * --------------------
+ *
+ * type: "http"
+ *   - Returns an HTTP response
+ *   - Required for HTTP-triggered functions
+ *
+ * direction: "out"
+ *   - This is an output binding
+ *
+ * name: "res"
+ *   - The response object name
+ *   - Set via context.res in your code
+ *
+ *
+ * OTHER COMMON BINDINGS:
+ * ----------------------
+ *
+ * Example: Output to Azure Storage Queue
+ * {
+ *   "type": "queue",
+ *   "direction": "out",
+ *   "name": "outputQueue",
+ *   "queueName": "myqueue",
+ *   "connection": "AzureWebJobsStorage"
+ * }
+ * Usage: context.bindings.outputQueue = message;
+ *
+ * Example: Input from Blob Storage
+ * {
+ *   "type": "blob",
+ *   "direction": "in",
+ *   "name": "inputBlob",
+ *   "path": "samples/{name}",
+ *   "connection": "AzureWebJobsStorage"
+ * }
+ * Usage: const data = context.bindings.inputBlob;
+ *
+ * Example: Output to Cosmos DB
+ * {
+ *   "type": "cosmosDB",
+ *   "direction": "out",
+ *   "name": "outputDocument",
+ *   "databaseName": "mydb",
+ *   "collectionName": "mycollection",
+ *   "createIfNotExists": true,
+ *   "connectionStringSetting": "CosmosDBConnection"
+ * }
+ * Usage: context.bindings.outputDocument = { id: "123", data: "..." };
+ *
+ *
+ * SCRIPT FILE:
+ * ------------
+ *
+ * scriptFile: "index.js"
+ *   - Specifies the JavaScript file containing the function code
+ *   - Relative to the function directory
+ *   - Default: index.js
+ *
+ *
+ * ADVANCED OPTIONS:
+ * -----------------
+ *
+ * disabled: false
+ *   - Set to true to temporarily disable the function
+ *
+ * excluded: false
+ *   - Set to true to exclude from deployment
+ *
+ *
+ * ROUTE PARAMETERS:
+ * -----------------
+ *
+ * Example route with parameters:
+ * "route": "users/{userId}/orders/{orderId}"
+ *
+ * Access in code:
+ * const userId = req.params.userId;
+ * const orderId = req.params.orderId;
+ *
+ * Optional parameters:
+ * "route": "users/{userId?}"
+ *
+ * Route constraints:
+ * "route": "users/{userId:int}"
+ *   - int, bool, datetime, decimal, double, float, guid, long, etc.
+ *
+ *
+ * AUTHENTICATION LEVELS EXPLAINED:
+ * --------------------------------
+ *
+ * anonymous:
+ *   - No key required
+ *   - Use for: Public APIs, webhooks with other auth mechanisms
+ *   - Security: Implement your own auth in code (JWT, OAuth, etc.)
+ *
+ * function:
+ *   - Requires function-specific key
+ *   - Each function can have multiple keys
+ *   - Use for: Most production APIs
+ *   - Rotate keys regularly for security
+ *
+ * admin:
+ *   - Requires master key (one key for entire Function App)
+ *   - Use for: Administrative operations only
+ *   - Never share master key
+ *
+ *
+ * TESTING:
+ * --------
+ *
+ * With function key:
+ * curl "https://<app-name>.azurewebsites.net/api/hello?name=John&code=<function-key>"
+ *
+ * With header:
+ * curl -H "x-functions-key: <function-key>" \
+ *      "https://<app-name>.azurewebsites.net/api/hello?name=John"
+ *
+ * Local testing (no key required):
+ * curl "http://localhost:7071/api/hello?name=John"
+ *
+ *
+ * PERFORMANCE TIPS:
+ * -----------------
+ *
+ * 1. Use specific HTTP methods instead of allowing all
+ * 2. Implement route parameters for RESTful APIs
+ * 3. Use bindings instead of SDK calls when possible (less code, better performance)
+ * 4. Enable streaming for large responses (set stream: true in response)
+ *
+ *
+ * SECURITY BEST PRACTICES:
+ * ------------------------
+ *
+ * 1. Use "function" or "admin" auth level in production (never "anonymous" unless public API)
+ * 2. Rotate function keys regularly
+ * 3. Use Azure AD authentication for user-facing APIs
+ * 4. Implement rate limiting for public endpoints
+ * 5. Validate all input in your function code
+ * 6. Use HTTPS only (enforced by default)
+ * 7. Configure CORS properly (don't use wildcard in production)
+ *
+ *
+ * MONITORING:
+ * -----------
+ *
+ * Application Insights automatically tracks:
+ * - HTTP request count
+ * - Response times
+ * - Success/failure rates
+ * - Dependencies
+ * - Exceptions
+ *
+ * View in Azure Portal:
+ * Function App → Application Insights → Logs
+ *
+ * Example KQL query:
+ * requests
+ * | where name == "hello"
+ * | summarize count() by resultCode
+ *
+ *
+ * RELATED FILES:
+ * --------------
+ *
+ * host.json (Function App level):
+ *   - Global settings for all functions in the app
+ *   - Logging configuration
+ *   - Extension bundles
+ *   - HTTP routing prefix
+ *
+ * local.settings.json (Local development):
+ *   - Environment variables for local testing
+ *   - Not deployed to Azure (add to .gitignore)
+ *   - Connection strings and secrets
+ *
+ *
+ * NEXT STEPS:
+ * -----------
+ *
+ * 1. Add more triggers (Timer, Queue, Blob, etc.)
+ * 2. Implement output bindings for common tasks
+ * 3. Configure CORS in host.json
+ * 4. Set up authentication with Azure AD
+ * 5. Implement Durable Functions for complex workflows
+ */

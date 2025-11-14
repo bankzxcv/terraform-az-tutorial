@@ -1,0 +1,287 @@
+{
+  "name": "simple-http-function",
+  "version": "1.0.0",
+  "description": "Simple HTTP-triggered Azure Function for learning purposes",
+  "main": "index.js",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "azure",
+    "functions",
+    "serverless",
+    "http",
+    "api"
+  ],
+  "author": "DevSecOps Learning Platform",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "azure-functions-core-tools": "^4"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
+/*
+ * PACKAGE.JSON EXPLANATION
+ * ========================
+ *
+ * This file defines the Node.js project metadata and dependencies.
+ *
+ *
+ * MINIMAL DEPENDENCIES:
+ * --------------------
+ *
+ * Notice that this package.json has NO runtime dependencies!
+ *
+ * Why?
+ * - This example intentionally avoids external dependencies
+ * - Uses only Node.js built-in modules
+ * - Demonstrates that Azure Functions work with plain JavaScript
+ * - Reduces:
+ *   - Deployment size
+ *   - Cold start time
+ *   - Security vulnerabilities
+ *   - Maintenance burden
+ *
+ * In production, you would add dependencies as needed:
+ * - Database clients: @azure/cosmos, pg, mysql
+ * - HTTP clients: axios, node-fetch
+ * - Validation: joi, validator
+ * - Utilities: lodash, date-fns
+ * - Authentication: @azure/identity, jsonwebtoken
+ *
+ *
+ * SCRIPTS:
+ * --------
+ *
+ * "start": "func start"
+ *   - Runs the Azure Functions runtime locally
+ *   - Requires Azure Functions Core Tools installed globally
+ *   - Development server runs on http://localhost:7071
+ *   - Hot reload enabled (auto-restarts on code changes)
+ *
+ * "test": "echo \"No tests yet\" && exit 0"
+ *   - Placeholder for tests
+ *   - In production, use Jest, Mocha, or similar
+ *   - Example: "test": "jest"
+ *
+ *
+ * RECOMMENDED SCRIPTS FOR PRODUCTION:
+ * -----------------------------------
+ *
+ * {
+ *   "scripts": {
+ *     "start": "func start",
+ *     "test": "jest",
+ *     "test:watch": "jest --watch",
+ *     "lint": "eslint .",
+ *     "format": "prettier --write .",
+ *     "prepare": "npm run lint && npm run test"
+ *   }
+ * }
+ *
+ *
+ * DEV DEPENDENCIES:
+ * ----------------
+ *
+ * azure-functions-core-tools:
+ *   - Local development and testing
+ *   - Emulates Azure Functions runtime
+ *   - Not needed in production (Azure provides the runtime)
+ *   - Install globally: npm install -g azure-functions-core-tools@4
+ *
+ *
+ * ENGINES:
+ * --------
+ *
+ * "node": ">=18.0.0"
+ *   - Specifies minimum Node.js version
+ *   - Azure Functions v4 supports: Node.js 18, 20
+ *   - Match this with the runtime version in Azure
+ *   - Set FUNCTIONS_WORKER_RUNTIME_VERSION in Azure App Settings
+ *
+ *
+ * PRODUCTION DEPENDENCIES (Examples):
+ * -----------------------------------
+ *
+ * For Azure services:
+ * {
+ *   "dependencies": {
+ *     "@azure/cosmos": "^4.0.0",           // Cosmos DB client
+ *     "@azure/storage-blob": "^12.0.0",    // Blob Storage client
+ *     "@azure/identity": "^4.0.0",         // Managed Identity
+ *     "@azure/keyvault-secrets": "^4.0.0"  // Key Vault client
+ *   }
+ * }
+ *
+ * For validation and utilities:
+ * {
+ *   "dependencies": {
+ *     "joi": "^17.0.0",                    // Schema validation
+ *     "validator": "^13.0.0",              // String validation
+ *     "date-fns": "^3.0.0",                // Date utilities
+ *     "uuid": "^9.0.0"                     // UUID generation
+ *   }
+ * }
+ *
+ * For HTTP and APIs:
+ * {
+ *   "dependencies": {
+ *     "axios": "^1.6.0",                   // HTTP client
+ *     "jsonwebtoken": "^9.0.0"             // JWT handling
+ *   }
+ * }
+ *
+ *
+ * DEPENDENCY BEST PRACTICES:
+ * --------------------------
+ *
+ * 1. Minimize dependencies (smaller = faster cold starts)
+ * 2. Use specific versions (not ^, ~ in production)
+ * 3. Regularly update dependencies (npm outdated, npm update)
+ * 4. Audit for vulnerabilities (npm audit)
+ * 5. Use package-lock.json for reproducible builds
+ * 6. Consider bundle size impact on cold starts
+ *
+ *
+ * BUNDLE SIZE OPTIMIZATION:
+ * -------------------------
+ *
+ * Azure Functions deployment includes:
+ * - Your code
+ * - node_modules (all dependencies)
+ * - function.json, host.json, etc.
+ *
+ * Tips to reduce size:
+ * 1. Use .funcignore to exclude unnecessary files
+ * 2. Run `npm ci --production` to skip devDependencies
+ * 3. Consider webpack/rollup to bundle and tree-shake
+ * 4. Remove unused dependencies regularly
+ *
+ *
+ * COLD START PERFORMANCE:
+ * -----------------------
+ *
+ * Factors affecting cold start time:
+ * 1. Deployment package size (smaller = faster)
+ * 2. Number of dependencies (fewer = faster)
+ * 3. Initialization code (less = faster)
+ * 4. Memory allocation (more = faster)
+ *
+ * This minimal example:
+ * - ~1-2 second cold start
+ * - ~50MB memory usage
+ * - ~10-50ms warm execution
+ *
+ *
+ * INSTALLING DEPENDENCIES:
+ * ------------------------
+ *
+ * Local development:
+ * $ npm install
+ *
+ * Production deployment:
+ * $ npm ci --production
+ *
+ * Azure handles this automatically during deployment from:
+ * - Azure DevOps
+ * - GitHub Actions
+ * - Azure CLI (func azure functionapp publish)
+ * - Terraform (if configured)
+ *
+ *
+ * LOCK FILE:
+ * ----------
+ *
+ * Always commit package-lock.json!
+ * - Ensures reproducible builds
+ * - Same versions across dev/staging/production
+ * - Faster npm ci compared to npm install
+ *
+ *
+ * SECURITY:
+ * ---------
+ *
+ * 1. Run npm audit regularly:
+ *    $ npm audit
+ *    $ npm audit fix
+ *
+ * 2. Use Snyk or Dependabot for automated scanning
+ *
+ * 3. Keep dependencies updated:
+ *    $ npm outdated
+ *    $ npm update
+ *
+ * 4. Use npm ci in CI/CD (not npm install)
+ *
+ * 5. Verify package integrity:
+ *    Package-lock.json includes checksums
+ *
+ *
+ * ENVIRONMENT-SPECIFIC CONFIGS:
+ * -----------------------------
+ *
+ * Development:
+ * - Install all dependencies (including devDependencies)
+ * - npm install
+ *
+ * Production:
+ * - Install only runtime dependencies
+ * - npm ci --production
+ * - Set NODE_ENV=production
+ *
+ *
+ * MONOREPO CONSIDERATIONS:
+ * ------------------------
+ *
+ * If using multiple functions in one repository:
+ * - Shared dependencies at root level
+ * - Function-specific dependencies in each function folder
+ * - Use npm workspaces or lerna for management
+ *
+ *
+ * TESTING DEPENDENCIES:
+ * ---------------------
+ *
+ * For comprehensive testing, add:
+ * {
+ *   "devDependencies": {
+ *     "jest": "^29.0.0",
+ *     "@types/jest": "^29.0.0",
+ *     "supertest": "^6.0.0",               // HTTP testing
+ *     "eslint": "^8.0.0",                  // Linting
+ *     "prettier": "^3.0.0",                // Code formatting
+ *     "husky": "^8.0.0",                   // Git hooks
+ *     "lint-staged": "^15.0.0"             // Pre-commit linting
+ *   }
+ * }
+ *
+ *
+ * NPM vs YARN vs PNPM:
+ * --------------------
+ *
+ * Azure Functions supports all package managers:
+ * - npm (default, most compatible)
+ * - yarn (faster, good for monorepos)
+ * - pnpm (most efficient disk usage)
+ *
+ * Deployment automatically detects:
+ * - package-lock.json → uses npm
+ * - yarn.lock → uses yarn
+ * - pnpm-lock.yaml → uses pnpm
+ *
+ *
+ * NEXT STEPS:
+ * -----------
+ *
+ * 1. Add testing framework (Jest recommended)
+ * 2. Add linting (ESLint)
+ * 3. Add formatting (Prettier)
+ * 4. Set up pre-commit hooks (Husky)
+ * 5. Add dependencies as your application grows
+ * 6. Configure CI/CD to run tests and security scans
+ */

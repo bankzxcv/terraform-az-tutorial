@@ -1,0 +1,183 @@
+name: Multi-Cloud Test
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      clouds:
+        description: 'Cloud providers to test'
+        required: true
+        type: choice
+        options:
+          - all
+          - azure
+          - aws
+          - gcp
+
+env:
+  TERRAFORM_VERSION: "1.6.0"
+
+jobs:
+  determine-clouds:
+    name: Determine Clouds to Test
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          if [[ "${{ github.event.inputs.clouds }}" == "all" ]] || [[ -z "${{ github.event.inputs.clouds }}" ]]; then
+            echo 'matrix={"cloud":["azure","aws","gcp"]}' >> $GITHUB_OUTPUT
+          else
+            echo 'matrix={"cloud":["${{ github.event.inputs.clouds }}"]}' >> $GITHUB_OUTPUT
+          fi
+
+  test-azure:
+    name: Test Azure
+    needs: determine-clouds
+    if: contains(fromJson(needs.determine-clouds.outputs.matrix).cloud, 'azure')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Test Azure Configuration
+        working-directory: examples/azure
+        run: |
+          terraform init
+          terraform validate
+          terraform plan
+
+      - name: Azure Test Summary
+        run: |
+          echo "## Azure Tests" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Azure configuration validated successfully" >> $GITHUB_STEP_SUMMARY
+
+  test-aws:
+    name: Test AWS
+    needs: determine-clouds
+    if: contains(fromJson(needs.determine-clouds.outputs.matrix).cloud, 'aws')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+          role-session-name: GitHubActions
+
+      - name: Test AWS Configuration
+        working-directory: examples/aws
+        run: |
+          terraform init
+          terraform validate
+          terraform plan
+
+      - name: AWS Test Summary
+        run: |
+          echo "## AWS Tests" >> $GITHUB_STEP_SUMMARY
+          echo "✅ AWS configuration validated successfully" >> $GITHUB_STEP_SUMMARY
+
+  test-gcp:
+    name: Test GCP
+    needs: determine-clouds
+    if: contains(fromJson(needs.determine-clouds.outputs.matrix).cloud, 'gcp')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Test GCP Configuration
+        working-directory: examples/gcp
+        run: |
+          terraform init
+          terraform validate
+          terraform plan
+
+      - name: GCP Test Summary
+        run: |
+          echo "## GCP Tests" >> $GITHUB_STEP_SUMMARY
+          echo "✅ GCP configuration validated successfully" >> $GITHUB_STEP_SUMMARY
+
+  integration-test:
+    name: Multi-Cloud Integration Test
+    needs: [test-azure, test-aws, test-gcp]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run integration tests
+        run: |
+          echo "Running multi-cloud integration tests..."
+          # Add integration tests here
+
+      - name: Test Summary
+        run: |
+          echo "## Multi-Cloud Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Provider Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Azure: ${{ needs.test-azure.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- AWS: ${{ needs.test-aws.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- GCP: ${{ needs.test-gcp.result }}" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.test-azure.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-aws.result }}" == "failure" ]] || \
+             [[ "${{ needs.test-gcp.result }}" == "failure" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Some tests failed - please review" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All multi-cloud tests passed!" >> $GITHUB_STEP_SUMMARY
+          fi

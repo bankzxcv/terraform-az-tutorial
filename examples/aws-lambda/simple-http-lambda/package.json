@@ -1,0 +1,361 @@
+{
+  "name": "simple-http-lambda",
+  "version": "1.0.0",
+  "description": "Simple HTTP-triggered AWS Lambda function for learning purposes",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0",
+    "package": "zip -r function.zip index.js package.json"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "serverless",
+    "http",
+    "api"
+  ],
+  "author": "DevSecOps Learning Platform",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+
+/*
+ * PACKAGE.JSON EXPLANATION FOR AWS LAMBDA
+ * ========================================
+ *
+ * This file defines the Node.js project metadata and dependencies.
+ *
+ *
+ * MINIMAL DEPENDENCIES:
+ * --------------------
+ *
+ * Notice that this package.json has NO runtime dependencies!
+ *
+ * Why?
+ * - This example intentionally avoids external dependencies
+ * - Uses only Node.js built-in modules
+ * - Demonstrates that Lambda works with plain JavaScript
+ * - Reduces:
+ *   - Deployment package size (smaller = faster cold starts)
+ *   - Security vulnerabilities
+ *   - Maintenance burden
+ *   - Cold start time
+ *
+ * In production, you would add dependencies as needed:
+ * - AWS SDK: @aws-sdk/client-* (v3 - modular)
+ * - Database clients: @aws-sdk/client-dynamodb, pg, mysql
+ * - HTTP clients: axios, node-fetch
+ * - Validation: joi, validator
+ * - Utilities: lodash, uuid
+ *
+ *
+ * SCRIPTS:
+ * --------
+ *
+ * "package": "zip -r function.zip index.js package.json"
+ *   - Creates deployment package (ZIP file)
+ *   - Includes only necessary files
+ *   - Used by Terraform or manual deployment
+ *   - Exclude: node_modules (if no dependencies)
+ *
+ * "test": "echo \"No tests yet\" && exit 0"
+ *   - Placeholder for tests
+ *   - In production, use Jest, Mocha, or similar
+ *   - Example: "test": "jest"
+ *
+ *
+ * RECOMMENDED SCRIPTS FOR PRODUCTION:
+ * -----------------------------------
+ *
+ * {
+ *   "scripts": {
+ *     "test": "jest",
+ *     "test:watch": "jest --watch",
+ *     "test:coverage": "jest --coverage",
+ *     "lint": "eslint .",
+ *     "format": "prettier --write .",
+ *     "package": "npm ci --production && zip -r function.zip index.js package*.json node_modules",
+ *     "deploy": "aws lambda update-function-code --function-name my-function --zip-file fileb://function.zip"
+ *   }
+ * }
+ *
+ *
+ * ENGINES:
+ * --------
+ *
+ * "node": ">=18.0.0"
+ *   - Specifies minimum Node.js version
+ *   - AWS Lambda supports: Node.js 16, 18, 20
+ *   - Match this with the Lambda runtime configuration
+ *   - Specified in Terraform or AWS Console
+ *
+ *
+ * AWS SDK USAGE:
+ * --------------
+ *
+ * AWS SDK v2 (Legacy - Included in Lambda Runtime):
+ * - Automatically available in Lambda environment
+ * - No need to include in package.json
+ * - Example: const AWS = require('aws-sdk');
+ * - Full SDK size: ~40MB (slow cold starts)
+ *
+ * AWS SDK v3 (Recommended - Modular):
+ * - NOT included in Lambda runtime by default
+ * - Must add to dependencies
+ * - Import only what you need (smaller bundle size)
+ * - Example: const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+ * - Much smaller bundle sizes
+ *
+ * {
+ *   "dependencies": {
+ *     "@aws-sdk/client-dynamodb": "^3.400.0",    // Just DynamoDB
+ *     "@aws-sdk/client-s3": "^3.400.0",          // Just S3
+ *     "@aws-sdk/client-secrets-manager": "^3.400.0"  // Just Secrets Manager
+ *   }
+ * }
+ *
+ *
+ * PRODUCTION DEPENDENCIES (Examples):
+ * -----------------------------------
+ *
+ * For AWS services (SDK v3 - recommended):
+ * {
+ *   "dependencies": {
+ *     "@aws-sdk/client-dynamodb": "^3.400.0",
+ *     "@aws-sdk/lib-dynamodb": "^3.400.0",      // DynamoDB Document Client
+ *     "@aws-sdk/client-s3": "^3.400.0",
+ *     "@aws-sdk/client-sqs": "^3.400.0",
+ *     "@aws-sdk/client-secrets-manager": "^3.400.0"
+ *   }
+ * }
+ *
+ * For validation and utilities:
+ * {
+ *   "dependencies": {
+ *     "joi": "^17.0.0",                         // Schema validation
+ *     "validator": "^13.0.0",                   // String validation
+ *     "uuid": "^9.0.0",                         // UUID generation
+ *     "date-fns": "^3.0.0"                      // Date utilities
+ *   }
+ * }
+ *
+ * For HTTP and APIs:
+ * {
+ *   "dependencies": {
+ *     "axios": "^1.6.0",                        // HTTP client
+ *     "@aws-lambda-powertools/logger": "^1.0.0",   // Structured logging
+ *     "@aws-lambda-powertools/metrics": "^1.0.0",  // Custom metrics
+ *     "@aws-lambda-powertools/tracer": "^1.0.0"    // X-Ray tracing
+ *   }
+ * }
+ *
+ * For databases:
+ * {
+ *   "dependencies": {
+ *     "pg": "^8.11.0",                          // PostgreSQL (RDS)
+ *     "mysql2": "^3.6.0",                       // MySQL (RDS)
+ *     "mongodb": "^6.0.0"                       // MongoDB (DocumentDB)
+ *   }
+ * }
+ *
+ *
+ * DEPENDENCY BEST PRACTICES:
+ * --------------------------
+ *
+ * 1. Minimize dependencies (smaller = faster cold starts)
+ *    - This example: 0 dependencies → ~50MB package, ~200ms cold start
+ *    - With dependencies: Could be 200MB+ → 1-3s cold start
+ *
+ * 2. Use specific versions in production (not ^, ~)
+ *    - Development: "^3.400.0" (automatic updates)
+ *    - Production: "3.400.0" (locked version)
+ *
+ * 3. Regularly update dependencies
+ *    - npm outdated (check for updates)
+ *    - npm update (update within semver range)
+ *    - npm audit (security vulnerabilities)
+ *
+ * 4. Use Lambda Layers for shared dependencies
+ *    - Share common dependencies across functions
+ *    - Reduces individual function package size
+ *    - Example: AWS SDK, database clients, utilities
+ *
+ * 5. Use package-lock.json for reproducible builds
+ *    - Always commit package-lock.json
+ *    - Use npm ci in CI/CD (not npm install)
+ *
+ * 6. Consider webpack or esbuild for bundling
+ *    - Tree-shaking removes unused code
+ *    - Minification reduces file size
+ *    - Can reduce bundle size by 50%+
+ *
+ *
+ * DEPLOYMENT PACKAGE CREATION:
+ * ----------------------------
+ *
+ * Option 1: No dependencies (this example)
+ * $ zip -r function.zip index.js package.json
+ *
+ * Option 2: With dependencies
+ * $ npm ci --production  # Install production dependencies only
+ * $ zip -r function.zip index.js package*.json node_modules
+ *
+ * Option 3: With bundler (webpack/esbuild)
+ * $ npm run build  # Creates optimized bundle
+ * $ zip -r function.zip dist
+ *
+ * Option 4: Terraform (automatic)
+ * - Terraform handles packaging automatically
+ * - See main.tf for configuration
+ *
+ *
+ * COLD START OPTIMIZATION:
+ * ------------------------
+ *
+ * Factors affecting cold start time:
+ * 1. Deployment package size (most important)
+ *    - This example: ~1 KB (near-instant)
+ *    - With AWS SDK v2: ~40 MB (slower)
+ *    - With large dependencies: 100+ MB (very slow)
+ *
+ * 2. Number of dependencies
+ *    - Fewer = faster
+ *    - Use only what you need
+ *
+ * 3. Initialization code
+ *    - Code outside handler runs once per container
+ *    - Use for connection pooling, configuration
+ *    - Don't overdo it (increases cold start)
+ *
+ * 4. Runtime (Node.js is generally faster than Java, .NET)
+ *
+ * 5. Memory allocation
+ *    - More memory = more CPU = faster initialization
+ *    - Sweet spot often around 1024 MB
+ *
+ * 6. ARM64 (Graviton2)
+ *    - ~19% faster performance
+ *    - 20% lower cost
+ *    - Recommend for production
+ *
+ *
+ * LAMBDA LAYERS:
+ * --------------
+ *
+ * Use layers for:
+ * - AWS SDK v3 (share across functions)
+ * - Common utilities (logging, validation)
+ * - Large dependencies (reduces function package size)
+ *
+ * Create layer:
+ * $ mkdir nodejs
+ * $ npm install --prefix nodejs @aws-sdk/client-dynamodb
+ * $ zip -r layer.zip nodejs
+ * $ aws lambda publish-layer-version --layer-name my-layer --zip-file fileb://layer.zip
+ *
+ * Reference in function:
+ * - Add layer ARN to Lambda configuration
+ * - Dependencies available in /opt/nodejs/node_modules
+ *
+ *
+ * CONTAINER REUSE:
+ * ----------------
+ *
+ * Code outside the handler runs once per container:
+ *
+ * // ❌ BAD: Initialize inside handler (slow)
+ * exports.handler = async (event) => {
+ *     const client = new DynamoDBClient({});
+ *     // Use client
+ * };
+ *
+ * // ✅ GOOD: Initialize outside handler (reused)
+ * const client = new DynamoDBClient({});
+ *
+ * exports.handler = async (event) => {
+ *     // Client already initialized and reused
+ * };
+ *
+ * Benefits:
+ * - Database connection pooling
+ * - SDK client reuse
+ * - Configuration caching
+ * - Improved performance for warm starts
+ *
+ *
+ * SECURITY:
+ * ---------
+ *
+ * 1. Run npm audit regularly:
+ *    $ npm audit
+ *    $ npm audit fix
+ *
+ * 2. Use Snyk, Dependabot, or AWS Inspector for automated scanning
+ *
+ * 3. Keep dependencies updated:
+ *    $ npm outdated
+ *    $ npm update
+ *
+ * 4. Use npm ci in CI/CD (not npm install)
+ *    - Respects package-lock.json exactly
+ *    - Faster and more reliable
+ *
+ * 5. Avoid dependencies with known vulnerabilities
+ *
+ *
+ * ENVIRONMENT-SPECIFIC CONFIGS:
+ * -----------------------------
+ *
+ * Development:
+ * - Install all dependencies (including devDependencies)
+ * - npm install
+ *
+ * Production deployment:
+ * - Install only runtime dependencies
+ * - npm ci --production
+ * - Set NODE_ENV=production
+ *
+ *
+ * TESTING:
+ * --------
+ *
+ * For comprehensive testing, add:
+ * {
+ *   "devDependencies": {
+ *     "jest": "^29.0.0",
+ *     "@types/jest": "^29.0.0",
+ *     "@types/aws-lambda": "^8.10.0",          // Type definitions
+ *     "aws-sdk-client-mock": "^3.0.0",         // Mock AWS SDK
+ *     "eslint": "^8.0.0",                      // Linting
+ *     "prettier": "^3.0.0"                     // Code formatting
+ *   }
+ * }
+ *
+ * Example test:
+ * const { handler } = require('./index');
+ *
+ * test('returns greeting for name', async () => {
+ *   const event = { queryStringParameters: { name: 'John' } };
+ *   const response = await handler(event, {});
+ *   expect(response.statusCode).toBe(200);
+ *   const body = JSON.parse(response.body);
+ *   expect(body.greeting).toBe('Hello, John!');
+ * });
+ *
+ *
+ * NEXT STEPS:
+ * -----------
+ *
+ * 1. Add testing framework (Jest recommended)
+ * 2. Add linting (ESLint)
+ * 3. Add formatting (Prettier)
+ * 4. Add TypeScript for type safety
+ * 5. Add AWS Lambda Powertools for best practices
+ * 6. Set up CI/CD to run tests and security scans
+ * 7. Create Lambda Layers for shared dependencies
+ * 8. Implement bundling with webpack or esbuild
+ */

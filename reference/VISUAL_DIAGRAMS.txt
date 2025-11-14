@@ -1,0 +1,1128 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    TERRAFORM VISUAL DIAGRAMS & FLOWCHARTS                    ║
+║                                                                              ║
+║    A comprehensive visual guide showing the complete Terraform workflow     ║
+║              with data flow, file interactions, and Azure integration       ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+
+═════════════════════════════════════════════════════════════════════════════════
+DIAGRAM 1: THE TERRAFORM INITIALIZATION FLOW (terraform init)
+═════════════════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│   $ terraform init                                                          │
+│                                                                             │
+│   ┌──────────────────────────────────────────────────────────────────┐    │
+│   │                      STEP 1: VALIDATION                         │    │
+│   ├──────────────────────────────────────────────────────────────────┤    │
+│   │                                                                  │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Files in Directory:                                      │   │    │
+│   │  │ • provider.tf                                            │   │    │
+│   │  │ • main.tf                                               │   │    │
+│   │  │ • variable.tf                                           │   │    │
+│   │  └──────────────────┬───────────────────────────────────────┘   │    │
+│   │                     │                                            │    │
+│   │                     ▼                                            │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Parse *.tf files:                                       │   │    │
+│   │  │ ✓ HCL Syntax valid?                                    │   │    │
+│   │  │ ✓ Block structure correct?                             │   │    │
+│   │  │ ✓ References make sense?                               │   │    │
+│   │  │ ✓ No duplicate resource names?                         │   │    │
+│   │  │                                                          │   │    │
+│   │  │ From provider.tf identified:                            │   │    │
+│   │  │ • Required provider: azurerm                            │   │    │
+│   │  │ • Version constraint: ~> 3.0                            │   │    │
+│   │  └──────────────────┬───────────────────────────────────────┘   │    │
+│   │                     │                                            │    │
+│   │                     ▼ All valid!                                │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Configuration Parsed Successfully                       │   │    │
+│   │  └──────────────────────────────────────────────────────────┘   │    │
+│   │                                                                  │    │
+│   └──────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│   ┌──────────────────────────────────────────────────────────────────┐    │
+│   │                 STEP 2: DOWNLOAD PROVIDER PLUGIN                 │    │
+│   ├──────────────────────────────────────────────────────────────────┤    │
+│   │                                                                  │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Required Provider Identified: azurerm ~> 3.0             │   │    │
+│   │  └──────────────────┬───────────────────────────────────────┘   │    │
+│   │                     │                                            │    │
+│   │                     ▼                                            │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Download from Terraform Registry:                       │   │    │
+│   │  │ https://registry.terraform.io/                          │   │    │
+│   │  │   → hashicorp/azurerm provider                          │   │    │
+│   │  │                                                          │   │    │
+│   │  │ Version Constraint Matching:                            │   │    │
+│   │  │ ~> 3.0  means:                                          │   │    │
+│   │  │   • >= 3.0, < 4.0                                      │   │    │
+│   │  │   • Latest 3.x version (e.g., 3.86.0)                 │   │    │
+│   │  │                                                          │   │    │
+│   │  │ Download size: ~200MB                                   │   │    │
+│   │  │ Download time: ~30-60 seconds                           │   │    │
+│   │  │                                                          │   │    │
+│   │  │ Provider file: terraform-provider-azurerm_v3.86.0       │   │    │
+│   │  │ (Binary executable)                                      │   │    │
+│   │  └──────────────────┬───────────────────────────────────────┘   │    │
+│   │                     │                                            │    │
+│   │                     ▼ Download complete!                        │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Provider Plugin Downloaded                              │   │    │
+│   │  │ Now in memory, ready to install                        │   │    │
+│   │  └──────────────────────────────────────────────────────────┘   │    │
+│   │                                                                  │    │
+│   └──────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│   ┌──────────────────────────────────────────────────────────────────┐    │
+│   │             STEP 3: INSTALL PROVIDER & CREATE LOCK FILE          │    │
+│   ├──────────────────────────────────────────────────────────────────┤    │
+│   │                                                                  │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Install Provider Plugin:                                │   │    │
+│   │  │ Move to: .terraform/providers/                          │   │    │
+│   │  │          registry.terraform.io/                         │   │    │
+│   │  │          hashicorp/                                     │   │    │
+│   │  │          azurerm/                                       │   │    │
+│   │  │          3.86.0/                                        │   │    │
+│   │  │          [OS]/                                          │   │    │
+│   │  │          terraform-provider-azurerm_v3.86.0             │   │    │
+│   │  │                                                          │   │    │
+│   │  │ Create Lock File: .terraform.lock.hcl                   │   │    │
+│   │  │ ┌──────────────────────────────────────────────────┐   │   │    │
+│   │  │ │ # This file is maintained automatically.        │   │   │    │
+│   │  │ │ # Manual edits may be lost in future updates.   │   │   │    │
+│   │  │ │                                                 │   │   │    │
+│   │  │ │ provider "registry.terraform.io/.../azurerm" {  │   │   │    │
+│   │  │ │   version     = "3.86.0"                        │   │   │    │
+│   │  │ │   constraints = "~> 3.0"                        │   │   │    │
+│   │  │ │   hashes = [                                   │   │   │    │
+│   │  │ │     "h1:abc123...",                            │   │   │    │
+│   │  │ │     "zh:def456...",                            │   │   │    │
+│   │  │ │   ]                                             │   │   │    │
+│   │  │ │ }                                               │   │   │    │
+│   │  │ └──────────────────────────────────────────────────┘   │   │    │
+│   │  │                                                          │   │    │
+│   │  │ Purpose of Lock File:                                  │   │    │
+│   │  │ • Records exact versions used                          │   │    │
+│   │  │ • Ensures all team members use same versions           │   │    │
+│   │  │ • Prevents unexpected provider version changes         │   │    │
+│   │  │ • MUST be committed to git!                           │   │    │
+│   │  └──────────────────┬───────────────────────────────────────┘   │    │
+│   │                     │                                            │    │
+│   │                     ▼ Lock file created!                        │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ .terraform.lock.hcl Now Exists                          │   │    │
+│   │  │ (Add to git repository!)                               │   │    │
+│   │  └──────────────────────────────────────────────────────────┘   │    │
+│   │                                                                  │    │
+│   └──────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│   ┌──────────────────────────────────────────────────────────────────┐    │
+│   │            STEP 4: INITIALIZE BACKEND & STATE SYSTEM             │    │
+│   ├──────────────────────────────────────────────────────────────────┤    │
+│   │                                                                  │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ No backend configuration found in terraform {}          │   │    │
+│   │  │ Default to: Local Backend                              │   │    │
+│   │  └──────────────────┬───────────────────────────────────────┘   │    │
+│   │                     │                                            │    │
+│   │                     ▼                                            │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ Backend Type: local                                     │   │    │
+│   │  │ State Location: terraform.tfstate (in current directory)│   │    │
+│   │  │                                                          │   │    │
+│   │  │ Advantages:                                             │   │    │
+│   │  │ + Simple, no setup needed                              │   │    │
+│   │  │ + Good for learning and single-user projects           │   │    │
+│   │  │                                                          │   │    │
+│   │  │ Disadvantages:                                          │   │    │
+│   │  │ - Not suitable for teams (no locking)                 │   │    │
+│   │  │ - State file in local filesystem (not backed up)      │   │    │
+│   │  │ - No built-in state versioning                        │   │    │
+│   │  │ - Security risk (state in git = exposed secrets)      │   │    │
+│   │  │                                                          │   │    │
+│   │  │ Initialize state file structure:                       │   │    │
+│   │  │ {                                                       │   │    │
+│   │  │   "version": 4,                                        │   │    │
+│   │  │   "terraform_version": "1.5.0",                        │   │    │
+│   │  │   "serial": 0,                                         │   │    │
+│   │  │   "lineage": "xyz789...",                              │   │    │
+│   │  │   "outputs": {},                                       │   │    │
+│   │  │   "resources": []  ← Empty (no resources yet)          │   │    │
+│   │  │ }                                                       │   │    │
+│   │  └──────────────────┬───────────────────────────────────────┘   │    │
+│   │                     │                                            │    │
+│   │                     ▼ Backend initialized!                      │    │
+│   │  ┌──────────────────────────────────────────────────────────┐   │    │
+│   │  │ terraform.tfstate File Created                          │   │    │
+│   │  │ (Empty, ready to track resources)                       │   │    │
+│   │  └──────────────────────────────────────────────────────────┘   │    │
+│   │                                                                  │    │
+│   └──────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│   ┌──────────────────────────────────────────────────────────────────┐    │
+│   │                    FINAL DIRECTORY STRUCTURE                     │    │
+│   ├──────────────────────────────────────────────────────────────────┤    │
+│   │                                                                  │    │
+│   │  terraform/simple/                                             │    │
+│   │  │                                                              │    │
+│   │  ├── provider.tf         ← Original (unchanged)                │    │
+│   │  ├── main.tf             ← Original (unchanged)                │    │
+│   │  ├── variable.tf         ← Original (unchanged)                │    │
+│   │  ├── terraform.tfvars    ← Original (unchanged)                │    │
+│   │  │                                                              │    │
+│   │  ├── .terraform/         ◄─ NEW! Auto-generated              │    │
+│   │  │   ├── providers/                                            │    │
+│   │  │   │   └── registry.terraform.io/                           │    │
+│   │  │   │       └── hashicorp/azurerm/3.86.0/...               │    │
+│   │  │   │           └── terraform-provider-azurerm_v3.86.0      │    │
+│   │  │   │                                                         │    │
+│   │  │   ├── modules/        ◄─ Empty (would contain modules)    │    │
+│   │  │   │                                                         │    │
+│   │  │   └── terraform.tfstate  ◄─ NEW! State file (empty)      │    │
+│   │  │                                                              │    │
+│   │  └── .terraform.lock.hcl  ◄─ NEW! Lock file (COMMIT THIS!)  │    │
+│   │                                                                  │    │
+│   │  Status: ✓ READY FOR TERRAFORM PLAN & APPLY                  │    │
+│   │                                                                  │    │
+│   └──────────────────────────────────────────────────────────────────┘    │
+│                                                                             │
+│   ✓ Initialization Complete!                                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+═════════════════════════════════════════════════════════════════════════════════
+DIAGRAM 2: VARIABLE EVALUATION & SUBSTITUTION FLOW
+═════════════════════════════════════════════════════════════════════════════════
+
+PHASE 1: VARIABLE DECLARATION
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ File: variable.tf                                                           │
+│                                                                             │
+│ variable "environment" {                                                    │
+│   type        = string                                                     │
+│   description = "Environment name"                                         │
+│   default     = "dev"                          ← Default value             │
+│   validation {                                                             │
+│     condition = contains(["dev", "prod"], var.environment)                │
+│     error_message = "Must be dev or prod"                                 │
+│   }                                                                        │
+│ }                                                                          │
+│                                                                             │
+│ variable "location" {                                                      │
+│   type = string                                                            │
+│   description = "Azure region"                                            │
+│   # No default - REQUIRED variable                                       │
+│ }                                                                          │
+│                                                                             │
+│ variable "tags" {                                                          │
+│   type = map(string)                                                       │
+│   default = {                                                              │
+│     ManagedBy = "Terraform"                                               │
+│     CreatedAt = "2024-01-01"                                             │
+│   }                                                                        │
+│ }                                                                          │
+│                                                                             │
+│ ┌─────────────────────────────────────────────────────────────────────┐  │
+│ │ Terraform Now "Knows About":                                       │  │
+│ │ • environment (type: string, default: "dev", validated)           │  │
+│ │ • location (type: string, REQUIRED, no default)                   │  │
+│ │ • tags (type: map(string), default: {...})                        │  │
+│ └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+PHASE 2: VALUE ASSIGNMENT (Sources in Priority Order)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ Source 1: terraform.tfvars (Highest Priority)                             │
+│ ┌──────────────────────────────────────────────────────────────────────┐  │
+│ │ environment = "production"                                          │  │
+│ │ location    = "West US"                                             │  │
+│ │ tags = {                                                            │  │
+│ │   ManagedBy = "Terraform"                                           │  │
+│ │   Environment = "Production"                                        │  │
+│ │ }                                                                   │  │
+│ └──────────────────────────────────────────────────────────────────────┘  │
+│                                │                                            │
+│                                ▼                                            │
+│ Source 2: *.tfvars files (if -var-file specified)                        │
+│ ┌──────────────────────────────────────────────────────────────────────┐  │
+│ │ $ terraform apply -var-file="prod.tfvars"                          │  │
+│ │                                                                     │  │
+│ │ prod.tfvars:                                                        │  │
+│ │   environment = "production"  ← Would override tfvars             │  │
+│ │   location = "East US"                                             │  │
+│ └──────────────────────────────────────────────────────────────────────┘  │
+│                                │                                            │
+│                                ▼                                            │
+│ Source 3: -var CLI flags (Highest Specificity)                           │
+│ ┌──────────────────────────────────────────────────────────────────────┐  │
+│ │ $ terraform apply \                                                │  │
+│ │   -var 'location=North Europe' \                                  │  │
+│ │   -var 'environment=staging'                                      │  │
+│ │                                                                     │  │
+│ │ These override BOTH sources above!                                  │  │
+│ └──────────────────────────────────────────────────────────────────────┘  │
+│                                │                                            │
+│                                ▼                                            │
+│ Source 4: Environment Variables (ARM_*)                                   │
+│ ┌──────────────────────────────────────────────────────────────────────┐  │
+│ │ $ export TF_VAR_environment="production"                            │  │
+│ │ $ export TF_VAR_location="East US"                                  │  │
+│ │                                                                     │  │
+│ │ TF_VAR_* variables auto-loaded for matching variable names         │  │
+│ └──────────────────────────────────────────────────────────────────────┘  │
+│                                │                                            │
+│                                ▼                                            │
+│ Source 5: Default Values (in variable.tf)                                │
+│ ┌──────────────────────────────────────────────────────────────────────┐  │
+│ │ If no value provided from above, use default                        │  │
+│ │ environment = "dev"  (if not specified elsewhere)                   │  │
+│ │ tags = {...}         (if not specified elsewhere)                   │  │
+│ └──────────────────────────────────────────────────────────────────────┘  │
+│                                │                                            │
+│                                ▼                                            │
+│ Source 6: Interactive Prompt (Only for required vars with no value)       │
+│ ┌──────────────────────────────────────────────────────────────────────┐  │
+│ │ $ terraform apply                                                   │  │
+│ │                                                                     │  │
+│ │ var.location                                                        │  │
+│ │   Enter a value: _                                                 │  │
+│ │                                                                     │  │
+│ │ (User types "East US")                                             │  │
+│ └──────────────────────────────────────────────────────────────────────┘  │
+│                                │                                            │
+│                                ▼                                            │
+│                    ┌──────────────────────────────┐                        │
+│                    │ FINAL VALUES DETERMINED      │                        │
+│                    │ environment = "production"   │                        │
+│                    │ location = "East US"         │                        │
+│                    │ tags = {...updated...}       │                        │
+│                    └──────────────────────────────┘                        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+PHASE 3: VALIDATION
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ For Each Variable, Check:                                                 │
+│                                                                             │
+│ 1. TYPE CHECK                                                              │
+│    ┌──────────────────────────────────────────────────────────────────┐   │
+│    │ environment = "production" (string)                             │   │
+│    │ Expected type: string                                           │   │
+│    │ ✓ Type matches!                                                │   │
+│    │                                                                │   │
+│    │ location = "East US" (string)                                  │   │
+│    │ Expected type: string                                          │   │
+│    │ ✓ Type matches!                                               │   │
+│    └──────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│ 2. VALIDATION RULES                                                        │
+│    ┌──────────────────────────────────────────────────────────────────┐   │
+│    │ environment = "production"                                      │   │
+│    │                                                                 │   │
+│    │ Validation block:                                              │   │
+│    │   condition = contains(["dev", "prod"], var.environment)       │   │
+│    │ → contains(["dev", "prod"], "production")                      │   │
+│    │ → false  ✗                                                     │   │
+│    │                                                                 │   │
+│    │ ERROR! "production" is not in allowed list ["dev", "prod"]   │   │
+│    │ Must be: "dev" or "prod"                                      │   │
+│    │                                                                 │   │
+│    │ Terraform stops here and shows error message!                  │   │
+│    └──────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│ 3. REQUIRED CHECK                                                          │
+│    ┌──────────────────────────────────────────────────────────────────┐   │
+│    │ location = "East US" (has value)                               │   │
+│    │ Required: true (no default provided)                           │   │
+│    │ ✓ Value provided!                                              │   │
+│    └──────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+│ ✓ ALL VALIDATIONS PASS                                                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+PHASE 4: VARIABLE SUBSTITUTION IN CODE
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│ File: main.tf                                                              │
+│                                                                             │
+│ resource "azurerm_resource_group" "rg" {                                  │
+│   name     = "rg-${var.environment}-app"                                  │
+│   │              │              │                                          │
+│   │              ▼              ▼                                          │
+│   │         Variable         Value                                        │
+│   │         Reference        in memory                                    │
+│   │                                                                       │
+│   │  Evaluation:                                                          │
+│   │  "rg-${var.environment}-app"                                         │
+│   │  "rg-${"prod"}-app"   (substitute with actual value)                │
+│   │  "rg-prod-app"        (final string)                                │
+│   │                                                                       │
+│   location = var.location                                                 │
+│              │             │                                              │
+│              ▼             ▼                                              │
+│         Variable    Value (West US)                                      │
+│         Reference                                                         │
+│                                                                           │
+│  Evaluation:                                                              │
+│  var.location → "West US"  (simple substitution)                        │
+│                                                                           │
+│   tags = merge(                                                           │
+│     var.tags,                    ← Use tags variable                     │
+│     {                                                                     │
+│       Environment = var.environment,   ← Use environment variable      │
+│       CreatedAt = timestamp()                                            │
+│     }                                                                     │
+│   )                                                                       │
+│ }                                                                         │
+│                                                                           │
+│ ┌─────────────────────────────────────────────────────────────────────┐  │
+│ │ RESULT AFTER SUBSTITUTION:                                        │  │
+│ │                                                                    │  │
+│ │ resource "azurerm_resource_group" "rg" {                         │  │
+│ │   name     = "rg-prod-app"                                       │  │
+│ │   location = "West US"                                           │  │
+│ │   tags = {                                                       │  │
+│ │     ManagedBy = "Terraform"                                      │  │
+│ │     CreatedAt = "2024-01-01"                                    │  │
+│ │     Environment = "prod"                                         │  │
+│ │     CreatedAt = "2024-11-08T14:30:00Z"                          │  │
+│ │   }                                                              │  │
+│ │ }                                                                │  │
+│ └─────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│ These values are now ready to pass to Azure Provider                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+═════════════════════════════════════════════════════════════════════════════════
+DIAGRAM 3: STATE FILE ARCHITECTURE & LIFECYCLE
+═════════════════════════════════════════════════════════════════════════════════
+
+TIME: BEFORE FIRST APPLY
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  terraform.tfstate (DOESN'T EXIST YET)                                    │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ [No file]                                                            │  │
+│  │                                                                      │  │
+│  │ Azure:                                                              │  │
+│  │ [No resources managed by Terraform]                                 │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│  Status: Virgin environment, ready for first deployment                   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+TIME: DURING FIRST TERRAFORM APPLY
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  Step 1: terraform apply evaluates main.tf and sends to Azure              │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ Terraform sends to Azure:                                           │  │
+│  │ {                                                                    │  │
+│  │   "resource_group": {                                               │  │
+│  │     "name": "rg-prod-app",                                          │  │
+│  │     "location": "eastus"                                            │  │
+│  │   },                                                                │  │
+│  │   "storage_account": {                                              │  │
+│  │     "name": "stgprodapp",                                           │  │
+│  │     "tier": "Standard"                                              │  │
+│  │   }                                                                 │  │
+│  │ }                                                                    │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                        │
+│                                    ▼                                        │
+│  Step 2: Azure creates resources and returns IDs                           │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ Azure Response:                                                     │  │
+│  │ {                                                                   │  │
+│  │   "resource_group_id": "/subscriptions/abc123/.../rg-prod-app",   │  │
+│  │   "resource_group_name": "rg-prod-app",                            │  │
+│  │   "resource_group_location": "eastus",                             │  │
+│  │   "storage_account_id": "/subscriptions/abc123/.../stgprodapp",   │  │
+│  │   "storage_account_endpoint": "https://stgprodapp.blob...",       │  │
+│  │   "timestamp": "2024-11-08T14:30:00Z"                             │  │
+│  │ }                                                                   │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                    │                                        │
+│                                    ▼                                        │
+│  Step 3: Terraform writes state file with resource mappings                │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ terraform.tfstate (NEW FILE CREATED):                              │  │
+│  │ {                                                                   │  │
+│  │   "version": 4,                                                    │  │
+│  │   "terraform_version": "1.5.0",                                    │  │
+│  │   "serial": 1,       ← Incremented from 0                          │  │
+│  │   "lineage": "xyz789...",  ← Unique ID for this state chain       │  │
+│  │   "outputs": {                                                     │  │
+│  │     "storage_account_name": {                                      │  │
+│  │       "value": "stgprodapp",                                       │  │
+│  │       "type": "string"                                            │  │
+│  │     }                                                              │  │
+│  │   },                                                               │  │
+│  │   "resources": [                                                   │  │
+│  │     {                                                              │  │
+│  │       "type": "azurerm_resource_group",                           │  │
+│  │       "name": "rg",                                               │  │
+│  │       "instances": [{                                             │  │
+│  │         "attributes": {                                           │  │
+│  │           "id": "/subscriptions/.../rg-prod-app",                │  │
+│  │           "name": "rg-prod-app",                                 │  │
+│  │           "location": "eastus"                                   │  │
+│  │         }                                                         │  │
+│  │       }]                                                          │  │
+│  │     },                                                             │  │
+│  │     {                                                              │  │
+│  │       "type": "azurerm_storage_account",                          │  │
+│  │       "name": "sa",                                               │  │
+│  │       "instances": [{                                             │  │
+│  │         "attributes": {                                           │  │
+│  │           "id": "/subscriptions/.../stgprodapp",                 │  │
+│  │           "name": "stgprodapp",                                  │  │
+│  │           "primary_blob_endpoint": "https://...",                │  │
+│  │           "type": "Standard_LRS"                                 │  │
+│  │         }                                                         │  │
+│  │       }]                                                          │  │
+│  │     }                                                              │  │
+│  │   ]                                                                │  │
+│  │ }                                                                  │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+│  Status: State file now maps Terraform code to real Azure resources       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+TIME: AFTER FIRST APPLY (Everything in Sync)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  Terraform Code (.tf files)                                               │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ resource "azurerm_resource_group" "rg" {                           │  │
+│  │   name     = "rg-prod-app"                                         │  │
+│  │   location = "East US"                                             │  │
+│  │ }                                                                   │  │
+│  │                                                                     │  │
+│  │ resource "azurerm_storage_account" "sa" {                         │  │
+│  │   name = "stgprodapp"                                             │  │
+│  │   ...                                                              │  │
+│  │ }                                                                   │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│           │                          │                        │            │
+│           │ MATCHES                  │ REFERENCED BY          │ DESCRIBES  │
+│           │                          │                        │            │
+│           └──────────────┬───────────┴────────────────┬───────┘            │
+│                          │                            │                    │
+│                          ▼                            ▼                    │
+│            ┌──────────────────────────────────────────────────┐             │
+│            │  terraform.tfstate (THE BRIDGE)                 │             │
+│            │  ┌──────────────────────────────────────────┐   │             │
+│            │  │ azurerm_resource_group.rg (in code)      │   │             │
+│            │  │ ↓                                         │   │             │
+│            │  │ ID: /subscriptions/xxx/rg-prod-app  ──┐ │   │             │
+│            │  │     (in Azure)                        │ │   │             │
+│            │  │                                       │ │   │             │
+│            │  │ azurerm_storage_account.sa (in code)  │ │   │             │
+│            │  │ ↓                                      │ │   │             │
+│            │  │ ID: /subscriptions/xxx/stgprodapp  ──┐│ │   │             │
+│            │  │     (in Azure)                       ││ │   │             │
+│            │  └───────────────────────────────────────┘│ │   │             │
+│            └──────────────────────────────────────────────┘   │             │
+│                          │                            │                    │
+│                          ▼                            ▼                    │
+│            ┌──────────────────────────────────────────────────┐             │
+│            │  Azure Cloud                                     │             │
+│            │  ┌──────────────────────────────────────────┐   │             │
+│            │  │ Resource Group: rg-prod-app              │   │             │
+│            │  │ ID: /subscriptions/xxx/rg-prod-app      │   │             │
+│            │  │ Location: eastus                         │   │             │
+│            │  │                                          │   │             │
+│            │  │ Storage Account: stgprodapp              │   │             │
+│            │  │ ID: /subscriptions/xxx/stgprodapp       │   │             │
+│            │  │ Type: Standard_LRS                       │   │             │
+│            │  └──────────────────────────────────────────┘   │             │
+│            └──────────────────────────────────────────────────┘             │
+│                                                                             │
+│  Desired State = Actual State = State File Records                        │
+│  ✓ EVERYTHING IN SYNC                                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+TIME: AFTER MODIFYING CONFIGURATION (Out of Sync)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│  You modify main.tf:                                                       │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ resource "azurerm_resource_group" "rg" {                           │  │
+│  │   name     = "rg-prod-app"                                         │  │
+│  │   location = "West US"    ◄─ CHANGED! (was East US)               │  │
+│  │ }                                                                   │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│           │                                                                 │
+│           │ WANTS TO CREATE                                               │
+│           ▼                                                                 │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ Desired Location: westus                                            │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│           │                                                                 │
+│           │ terraform.tfstate SAYS:                                        │
+│           ▼                                                                 │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ Current Location: eastus                                            │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│           │                                                                 │
+│           │ terraform plan COMPARES:                                       │
+│           ▼                                                                 │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ CHANGE NEEDED!                                                     │  │
+│  │                                                                     │  │
+│  │ ~ location = "eastus" -> "westus"                                 │  │
+│  │                                                                     │  │
+│  │ This resource will be modified/updated!                            │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│           │                                                                 │
+│           │ terraform apply EXECUTES:                                      │
+│           ▼                                                                 │
+│  ┌──────────────────────────────────────────────────────────────────────┐  │
+│  │ Azure API Call:                                                    │  │
+│  │ PUT /subscriptions/.../resourceGroups/rg-prod-app                 │  │
+│  │ { "location": "westus" }                                          │  │
+│  │                                                                     │  │
+│  │ Azure updates resource:                                            │  │
+│  │ Resource Group location changed from eastus → westus               │  │
+│  │                                                                     │  │
+│  │ Terraform.tfstate updated:                                         │  │
+│  │ "location": "westus"  ← Updated                                   │  │
+│  │ "serial": 2           ← Incremented                               │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│           │                                                                 │
+│           ▼                                                                 │
+│  ✓ NOW IN SYNC AGAIN                                                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+
+═════════════════════════════════════════════════════════════════════════════════
+DIAGRAM 4: COMPLETE WORKFLOW WITH ALL DATA FLOWS
+═════════════════════════════════════════════════════════════════════════════════
+
+                              USER RUNS: terraform apply
+                                        │
+                    ┌───────────────────┴───────────────────┐
+                    │                                       │
+                    ▼                                       ▼
+            ┌───────────────────┐               ┌──────────────────┐
+            │ Read *.tf files   │               │ Read variables   │
+            │                   │               │                  │
+            │ • provider.tf     │               │ • variable.tf    │
+            │ • main.tf         │               │ • terraform.tfvars
+            │ • outputs.tf      │               │ • CLI -var flags │
+            └────────┬──────────┘               └────────┬─────────┘
+                     │                                   │
+                     │  Parse & Validate               │  Validate
+                     │                                   │  Type Check
+                     └───────────────┬───────────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────────┐
+                        │  TERRAFORM CORE ENGINE     │
+                        │  ─────────────────────────  │
+                        │  • Evaluate variable refs  │
+                        │  • Substitute values       │
+                        │  • Build HCL objects       │
+                        │  • Create dependency graph │
+                        │  • Serialize to JSON       │
+                        └────────────┬───────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────────┐
+                        │ Read terraform.tfstate     │
+                        │ (Current state)            │
+                        └────────────┬───────────────┘
+                                     │
+                                     ▼
+                        ┌────────────────────────────┐
+                        │  COMPARE PLAN GENERATION   │
+                        │  ─────────────────────────  │
+                        │                            │
+                        │  For each resource:        │
+                        │  • Does it exist in state? │
+                        │  • Are properties same?    │
+                        │  • What needs to change?   │
+                        │                            │
+                        │  Result: Execution Plan    │
+                        │  + Create (5)              │
+                        │  ~ Update (3)              │
+                        │  - Delete (1)              │
+                        └────────────┬───────────────┘
+                                     │
+                        ┌────────────┴────────────┐
+                        │                         │
+                        ▼                         ▼
+                  ┌─────────────────┐     ┌──────────────────┐
+                  │ Show Plan to    │     │ Save Plan to     │
+                  │ User            │     │ File (optional)  │
+                  │                 │     │                  │
+                  │ "Apply will:    │     │ terraform.plan   │
+                  │  + Create RG    │     │                  │
+                  │  + Create SA    │     │ (Binary file)    │
+                  │  ~ Update Vault │     │                  │
+                  │ Confirm? (y/n)" │     │ Locked to this   │
+                  └────────┬────────┘     │ execution plan   │
+                           │             └──────────────────┘
+                           │
+                      User Confirms (yes)
+                           │
+                           ▼
+                ┌──────────────────────────┐
+                │ APPLY EXECUTION PHASE    │
+                │ ──────────────────────── │
+                │                          │
+                │ For each resource in     │
+                │ dependency order:        │
+                │                          │
+                │ 1. Prepare API call      │
+                │ 2. Authenticate to Azure │
+                │ 3. Call Azure REST API   │
+                │ 4. Wait for response     │
+                │ 5. Process response      │
+                │ 6. Store resource ID     │
+                │ 7. Move to next resource │
+                └────────────┬─────────────┘
+                             │
+                ┌────────────┼────────────┐
+                │            │            │
+                ▼            ▼            ▼
+         ┌────────────┐ ┌────────────┐ ┌──────────────┐
+         │ Resource 1 │ │ Resource 2 │ │ Resource 3   │
+         │ (no deps)  │ │ (depends   │ │ (depends on  │
+         │ Create     │ │  on 1)     │ │ 1 & 2)       │
+         │ RG         │ │ Create SA  │ │ Create Vault │
+         └────────────┘ └────────────┘ └──────────────┘
+                │            │              │
+                ▼            ▼              ▼
+         ┌────────────────────────────────────────────┐
+         │ AZURE REST API CALLS (Sequential or        │
+         │ Parallel based on dependencies)            │
+         │                                            │
+         │ 1. PUT /resourceGroups/...                │
+         │    Response: RG created, ID returned       │
+         │                                            │
+         │ 2. PUT /storageAccounts/...              │
+         │    Uses RG ID from response 1             │
+         │    Response: SA created, ID returned       │
+         │                                            │
+         │ 3. PUT /vaults/...                       │
+         │    Uses RG ID from response 1             │
+         │    Response: Vault created, ID returned    │
+         └────────────┬─────────────────────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────────────────────┐
+         │ RESPONSE AGGREGATION                       │
+         │                                            │
+         │ Resource Details:                         │
+         │ {                                          │
+         │   rg: { id: ".../rg", name: "...", ... }  │
+         │   sa: { id: ".../sa", name: "...", ... }  │
+         │   vault: { id: ".../vault", name: ... }   │
+         │ }                                          │
+         └────────────┬─────────────────────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────────────────────┐
+         │ UPDATE terraform.tfstate                   │
+         │                                            │
+         │ For each resource:                        │
+         │ 1. Add to resources array                 │
+         │ 2. Store resource ID                      │
+         │ 3. Store all properties                   │
+         │ 4. Mark as managed by Terraform           │
+         │                                            │
+         │ Increment serial number: 1 → 2            │
+         │ Save to disk                              │
+         │ Create backup: terraform.tfstate.backup   │
+         └────────────┬─────────────────────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────────────────────┐
+         │ EVALUATE OUTPUTS                           │
+         │                                            │
+         │ output "rg_id" {                          │
+         │   value = azurerm_resource_group.rg.id   │
+         │   → "/subscriptions/.../rg"              │
+         │ }                                          │
+         │                                            │
+         │ output "sa_endpoint" {                    │
+         │   value = azurerm_storage_account.sa...  │
+         │   → "https://mysa.blob.core.windows.net" │
+         │ }                                          │
+         │                                            │
+         │ Store outputs in terraform.tfstate        │
+         └────────────┬─────────────────────────────┘
+                      │
+                      ▼
+         ┌────────────────────────────────────────────┐
+         │ DISPLAY RESULTS TO USER                    │
+         │                                            │
+         │ Apply complete! Resources: 3 added        │
+         │                                            │
+         │ Outputs:                                  │
+         │ rg_id = "/subscriptions/.../rg"          │
+         │ sa_endpoint = "https://mysa.blob...."    │
+         │                                            │
+         │ Next: terraform output [name]             │
+         │       to query outputs later              │
+         └────────────────────────────────────────────┘
+
+
+═════════════════════════════════════════════════════════════════════════════════
+DIAGRAM 5: PROVIDER AUTHENTICATION & AZURE API INTERACTION
+═════════════════════════════════════════════════════════════════════════════════
+
+AUTHENTICATION FLOW:
+
+$ terraform apply
+         │
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Provider Plugin Initializes (azurerm)                       │
+│                                                             │
+│ Location: .terraform/providers/.../azurerm_v3.86.0         │
+│           terraform-provider-azurerm executable            │
+└────────────┬────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 1: Check Environment Variables                        │
+│ ─────────────────────────────────────────────────────────── │
+│                                                             │
+│ $ echo $ARM_CLIENT_ID          (Service Principal ID)      │
+│ $ echo $ARM_CLIENT_SECRET      (Service Principal Secret)  │
+│ $ echo $ARM_TENANT_ID          (Azure Tenant ID)           │
+│ $ echo $ARM_SUBSCRIPTION_ID    (Azure Subscription ID)     │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────┐   │
+│ │ All 4 variables set?                               │   │
+│ │ ├─ YES: Use Service Principal auth                │   │
+│ │ │   └─ Send client_id, client_secret, tenant      │   │
+│ │ │      to Azure Token Endpoint                    │   │
+│ │ │      Receive: Bearer Token                      │   │
+│ │ │                                                  │   │
+│ │ └─ NO: Continue to next method...                 │   │
+│ └─────────────────────────────────────────────────────┘   │
+└────────────┬────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 2: Check for Managed Identity                         │
+│ ─────────────────────────────────────────────────────────── │
+│                                                             │
+│ Running in Azure VM/App Service/Container/etc?             │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────┐   │
+│ │ Can access Azure Metadata Service?                 │   │
+│ │ http://169.254.169.254/metadata/identity/oauth2/   │   │
+│ │ token?api-version=2017-09-01                       │   │
+│ │                                                     │   │
+│ │ ├─ YES: Managed Identity enabled                   │   │
+│ │ │   └─ Request token from Metadata Service         │   │
+│ │ │      Receive: Managed Identity Bearer Token      │   │
+│ │ │                                                  │   │
+│ │ └─ NO: Continue to next method...                 │   │
+│ └─────────────────────────────────────────────────────┘   │
+└────────────┬────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 3: Check Azure CLI Authentication                     │
+│ ─────────────────────────────────────────────────────────── │
+│                                                             │
+│ User previously ran: $ az login                            │
+│ Token cached at: ~/.azure/accessTokens.json                │
+│                                                             │
+│ ┌─────────────────────────────────────────────────────┐   │
+│ │ Token file exists and not expired?                 │   │
+│ │                                                     │   │
+│ │ ├─ YES: Use cached Azure CLI token                │   │
+│ │ │   └─ Extract Bearer Token from cache            │   │
+│ │ │                                                  │   │
+│ │ └─ NO: Continue to next method...                 │   │
+│ └─────────────────────────────────────────────────────┘   │
+└────────────┬────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────┐
+│ STEP 4: Interactive Browser Login                          │
+│ ─────────────────────────────────────────────────────────── │
+│                                                             │
+│ No other auth method worked, prompt user:                  │
+│                                                             │
+│ "Attempting to login for Default Subscription..."          │
+│                                                             │
+│ Browser opens → Azure login page                           │
+│ User enters credentials                                    │
+│ Azure redirects back with auth code                        │
+│ Token cached for future use                                │
+│ Receive: Bearer Token                                      │
+│                                                             │
+│ Token stored: ~/.azure/accessTokens.json                   │
+│              ~/.azure/msal_token_cache.bin                 │
+└────────────┬────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────┐
+│ AUTHENTICATION SUCCESSFUL!                                 │
+│                                                             │
+│ Provider has Bearer Token:                                 │
+│ eyJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJzdWI...            │
+│                                                             │
+│ Ready to call Azure REST APIs                              │
+└────────────┬────────────────────────────────────────────────┘
+             │
+             ▼
+┌─────────────────────────────────────────────────────────────┐
+│ AZURE REST API CALLS                                        │
+│                                                             │
+│ For each resource in execution plan:                       │
+│                                                             │
+│ resource "azurerm_resource_group" "rg" {                  │
+│   name     = "my-rg"                                       │
+│   location = "East US"                                     │
+│ }                                                           │
+│                                                             │
+│ Provider translates to:                                    │
+│                                                             │
+│ HTTP Request:                                              │
+│ ┌─────────────────────────────────────────────────────┐   │
+│ │ PUT /subscriptions/abc123/resourceGroups/my-rg    │   │
+│ │ HTTP/1.1                                            │   │
+│ │ Host: management.azure.com                         │   │
+│ │ Authorization: Bearer eyJhbGciOiJSUzI1NiI...       │   │
+│ │ Content-Type: application/json                     │   │
+│ │ User-Agent: terraform-provider-azurerm/3.86.0      │   │
+│ │ X-MS-Correlation-Request-ID: abc123...             │   │
+│ │ api-version: 2021-04-01                            │   │
+│ │                                                     │   │
+│ │ {                                                   │   │
+│ │   "location": "eastus"                             │   │
+│ │ }                                                   │   │
+│ └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│ Azure Processing:                                          │
+│ 1. Validate Bearer Token (verify user authenticated)       │
+│ 2. Extract subscription from token                         │
+│ 3. Check RBAC permissions (can user create RG?)           │
+│ 4. Validate parameters (location exists?)                  │
+│ 5. Check quotas (RG limit not exceeded?)                   │
+│ 6. Create resource in Azure fabric                         │
+│ 7. Return response                                         │
+│                                                             │
+│ HTTP Response:                                             │
+│ ┌─────────────────────────────────────────────────────┐   │
+│ │ HTTP/1.1 201 Created                               │   │
+│ │ Content-Type: application/json                     │   │
+│ │ x-ms-correlation-request-id: abc123...             │   │
+│ │                                                     │   │
+│ │ {                                                   │   │
+│ │   "id": "/subscriptions/abc123/resourceGroups/my-rg",  │
+│ │   "name": "my-rg",                                 │   │
+│ │   "location": "eastus",                            │   │
+│ │   "properties": {                                  │   │
+│ │     "provisioningState": "Succeeded"               │   │
+│ │   },                                                │   │
+│ │   "type": "Microsoft.Resources/resourceGroups"    │   │
+│ │ }                                                   │   │
+│ └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│ Provider receives response:                                │
+│ • Extracts resource ID                                    │
+│ • Maps properties to Terraform resource                   │
+│ • Returns to Terraform Core                               │
+│                                                             │
+│ Terraform updates state:                                  │
+│ {                                                          │
+│   "type": "azurerm_resource_group",                       │
+│   "name": "rg",                                           │
+│   "attributes": {                                         │
+│     "id": "/subscriptions/abc123/resourceGroups/my-rg", │
+│     "name": "my-rg",                                      │
+│     "location": "eastus"                                  │
+│   }                                                        │
+│ }                                                          │
+└─────────────────────────────────────────────────────────────┘
+
+
+═════════════════════════════════════════════════════════════════════════════════
+DIAGRAM 6: DEPENDENCY GRAPH & EXECUTION ORDER
+═════════════════════════════════════════════════════════════════════════════════
+
+CONFIGURATION:
+
+resource "azurerm_resource_group" "rg" {
+  name     = "my-rg"
+  location = "East US"
+}
+
+resource "azurerm_storage_account" "sa" {
+  resource_group_name = azurerm_resource_group.rg.name  ◄─ DEPENDS ON RG
+  ...
+}
+
+resource "azurerm_key_vault" "kv" {
+  resource_group_name = azurerm_resource_group.rg.name  ◄─ DEPENDS ON RG
+  ...
+}
+
+resource "azurerm_key_vault_secret" "secret" {
+  key_vault_id = azurerm_key_vault.kv.id  ◄─ DEPENDS ON KEY VAULT
+  ...
+}
+
+
+DEPENDENCY GRAPH:
+
+                    ┌────────────────────────────┐
+                    │ azurerm_resource_group.rg  │
+                    │ (No dependencies)          │
+                    └────────────────┬───────────┘
+                                     │
+                    ┌────────────────┴───────────────┐
+                    │                                │
+                    ▼                                ▼
+        ┌───────────────────────────┐  ┌──────────────────────────┐
+        │ azurerm_storage_account   │  │ azurerm_key_vault.kv     │
+        │ .sa                       │  │                          │
+        │ (depends on RG)           │  │ (depends on RG)          │
+        └───────────────┬───────────┘  └────────────┬─────────────┘
+                        │                            │
+                        │  (no further deps)        │
+                        │                            │
+                        │                            ▼
+                        │                 ┌──────────────────────────┐
+                        │                 │ azurerm_key_vault_secret │
+                        │                 │ (depends on KV)          │
+                        │                 └──────────────────────────┘
+
+
+EXECUTION PLAN:
+
+Phase 1 (No dependencies - Execute in parallel if possible):
+├─ Create azurerm_resource_group.rg
+│  └─ Send API call to Azure
+│     └─ Wait for RG creation
+│        └─ Get RG ID/name back
+│           └─ Store in state
+│
+
+Phase 2 (Depends on RG - Wait for Phase 1 to complete):
+├─ Create azurerm_storage_account.sa
+│  ├─ Use RG name/ID from Phase 1
+│  └─ Send API call to Azure
+│     └─ Wait for SA creation
+│        └─ Get SA ID back
+│           └─ Store in state
+│
+├─ Create azurerm_key_vault.kv  (Parallel with SA - both depend only on RG)
+│  ├─ Use RG name/ID from Phase 1
+│  └─ Send API call to Azure
+│     └─ Wait for KV creation
+│        └─ Get KV ID back
+│           └─ Store in state
+│
+
+Phase 3 (Depends on KV - Wait for Phase 2 to complete):
+├─ Create azurerm_key_vault_secret.secret
+│  ├─ Use KV ID from Phase 2
+│  └─ Send API call to Azure
+│     └─ Wait for secret creation
+│        └─ Store in state
+
+
+TIMELINE:
+
+Time  Action                                          Status
+────  ───────────────────────────────────────────────────────────
+ 0s   terraform apply starts                         Planning...
+ 2s   Phase 1: Create RG                            RG creation...
+ 5s   ✓ RG created, ID returned                     Complete
+
+ 6s   Phase 2: Create SA                            SA creation...
+ 6s   Phase 2: Create KV (parallel)                 KV creation...
+ 9s   ✓ SA created, ID returned                     Complete
+ 10s  ✓ KV created, ID returned                     Complete
+
+ 11s  Phase 3: Create Secret                        Secret creation...
+ 12s  ✓ Secret created                              Complete
+
+ 12s  ✓ All resources created!                      Apply complete!
+      terraform.tfstate updated
+      Outputs displayed
+
+
+ACTUAL TERRAFORM OUTPUT:
+
+$ terraform apply
+
+Terraform will perform the following actions:
+
+  # azurerm_key_vault.kv will be created
+  + resource "azurerm_key_vault" "kv" {
+      + id                = (known after apply)
+      + resource_group_name = "my-rg"
+    }
+
+  # azurerm_key_vault_secret.secret will be created
+  + resource "azurerm_key_vault_secret" "secret" {
+      + id        = (known after apply)
+      + key_vault_id = (known after apply)
+    }
+
+  # azurerm_resource_group.rg will be created
+  + resource "azurerm_resource_group" "rg" {
+      + id       = (known after apply)
+      + location = "eastus"
+      + name     = "my-rg"
+    }
+
+  # azurerm_storage_account.sa will be created
+  + resource "azurerm_storage_account" "sa" {
+      + id                  = (known after apply)
+      + resource_group_name = "my-rg"
+    }
+
+Plan: 4 to add, 0 to change, 0 destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+azurerm_resource_group.rg: Creating...
+azurerm_resource_group.rg: Creation complete after 3s [id=/subscriptions/abc123/resourceGroups/my-rg]
+azurerm_storage_account.sa: Creating...
+azurerm_key_vault.kv: Creating...
+azurerm_storage_account.sa: Creation complete after 4s
+azurerm_key_vault.kv: Creation complete after 5s
+azurerm_key_vault_secret.secret: Creating...
+azurerm_key_vault_secret.secret: Creation complete after 2s
+
+Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
+
+═════════════════════════════════════════════════════════════════════════════════
+END OF DIAGRAMS
+═════════════════════════════════════════════════════════════════════════════════
