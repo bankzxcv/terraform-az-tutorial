@@ -1,0 +1,148 @@
+name: Terraform Security Scan
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  schedule:
+    - cron: '0 0 * * 0'  # Weekly on Sunday
+
+jobs:
+  tfsec:
+    name: tfsec Security Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run tfsec
+        uses: aquasecurity/tfsec-action@v1.0.0
+        with:
+          soft_fail: false
+          format: sarif
+          additional_args: --minimum-severity HIGH
+          sarif_file: tfsec.sarif
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: tfsec.sarif
+
+  checkov:
+    name: Checkov Policy Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: terraform
+          output_format: sarif
+          output_file_path: checkov.sarif
+          soft_fail: false
+          skip_check: CKV_DOCKER_2,CKV_DOCKER_3
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: checkov.sarif
+
+  terrascan:
+    name: Terrascan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Terrascan
+        uses: tenable/terrascan-action@v1.4.0
+        with:
+          iac_type: 'terraform'
+          iac_version: 'v14'
+          policy_type: 'all'
+          sarif_upload: true
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: terrascan.sarif
+
+  trivy:
+    name: Trivy Scan
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy.sarif'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy.sarif'
+
+  security-gate:
+    name: Security Gate
+    needs: [tfsec, checkov, terrascan, trivy]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check scan results
+        run: |
+          echo "## Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- tfsec: ${{ needs.tfsec.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Checkov: ${{ needs.checkov.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Terrascan: ${{ needs.terrascan.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Trivy: ${{ needs.trivy.result }}" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.tfsec.result }}" == "failure" ]] || \
+             [[ "${{ needs.checkov.result }}" == "failure" ]] || \
+             [[ "${{ needs.terrascan.result }}" == "failure" ]] || \
+             [[ "${{ needs.trivy.result }}" == "failure" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Security scan failed - please review the security tab" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All security scans passed!" >> $GITHUB_STEP_SUMMARY
+          fi

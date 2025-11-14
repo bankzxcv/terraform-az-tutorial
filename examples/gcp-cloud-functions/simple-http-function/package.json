@@ -1,0 +1,19 @@
+{
+  "name": "simple-http-function",
+  "version": "1.0.0",
+  "description": "Simple HTTP-triggered Google Cloud Function",
+  "main": "index.js",
+  "scripts": {
+    "start": "functions-framework --target=helloWorld",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": ["gcp", "cloud-functions", "serverless", "http"],
+  "author": "DevSecOps Learning Platform",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/functions-framework": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

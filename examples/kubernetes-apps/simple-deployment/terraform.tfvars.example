@@ -1,0 +1,43 @@
+# Example terraform.tfvars
+# Copy this file to terraform.tfvars and customize for your environment
+
+# Application configuration
+namespace    = "demo-app"
+environment  = "production"
+app_version  = "1.0.0"
+log_level    = "info"
+
+# Container image
+image_registry = "your-registry.azurecr.io"  # or ECR, GCR, Docker Hub
+image_name     = "demo-app"
+
+# Scaling configuration
+replicas     = 3
+min_replicas = 3
+max_replicas = 10
+
+# Resource limits
+cpu_request    = "250m"
+cpu_limit      = "500m"
+memory_request = "256Mi"
+memory_limit   = "512Mi"
+
+# HPA configuration
+target_cpu_utilization    = 70
+target_memory_utilization = 80
+
+# LoadBalancer (optional)
+create_load_balancer = true
+
+# Cloud-specific annotations for LoadBalancer
+load_balancer_annotations = {
+  # For AWS
+  "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb"
+  "service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled" = "true"
+
+  # For Azure
+  # "service.beta.kubernetes.io/azure-load-balancer-internal" = "false"
+
+  # For GCP
+  # "cloud.google.com/load-balancer-type" = "External"
+}

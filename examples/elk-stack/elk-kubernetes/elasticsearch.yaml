@@ -1,0 +1,98 @@
+# Elasticsearch cluster on Kubernetes using ECK
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elasticsearch
+  namespace: elk
+spec:
+  version: 8.11.0
+
+  # HTTP configuration
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: false
+
+  # Node sets
+  nodeSets:
+  # Master nodes
+  - name: master
+    count: 3
+    config:
+      node.roles: ["master"]
+      xpack.ml.enabled: false
+
+    podTemplate:
+      spec:
+        # Anti-affinity to spread across nodes
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  elasticsearch.k8s.elastic.co/cluster-name: elasticsearch
+              topologyKey: kubernetes.io/hostname
+
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 2Gi
+              cpu: 1
+            limits:
+              memory: 2Gi
+              cpu: 2
+          env:
+          - name: ES_JAVA_OPTS
+            value: "-Xms1g -Xmx1g"
+
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: default  # Change to your storage class
+
+  # Data nodes
+  - name: data
+    count: 3
+    config:
+      node.roles: ["data", "ingest"]
+
+    podTemplate:
+      spec:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  elasticsearch.k8s.elastic.co/cluster-name: elasticsearch
+              topologyKey: kubernetes.io/hostname
+
+        containers:
+        - name: elasticsearch
+          resources:
+            requests:
+              memory: 8Gi
+              cpu: 2
+            limits:
+              memory: 8Gi
+              cpu: 4
+          env:
+          - name: ES_JAVA_OPTS
+            value: "-Xms4g -Xmx4g"
+
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 500Gi
+        storageClassName: default  # Change to your storage class

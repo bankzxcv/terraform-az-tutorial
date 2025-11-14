@@ -1,0 +1,36 @@
+# Kibana deployment on Kubernetes using ECK
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: elk
+spec:
+  version: 8.11.0
+  count: 2
+
+  elasticsearchRef:
+    name: elasticsearch
+
+  podTemplate:
+    spec:
+      containers:
+      - name: kibana
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 500m
+          limits:
+            memory: 2Gi
+            cpu: 1
+
+  http:
+    service:
+      spec:
+        type: LoadBalancer  # Or ClusterIP with Ingress
+        ports:
+        - port: 5601
+          targetPort: 5601
+          name: https
+    tls:
+      selfSignedCertificate:
+        disabled: false  # Enable TLS
